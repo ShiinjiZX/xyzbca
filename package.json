@@ -1,0 +1,19 @@
+{
+  "name": "nodejs-web-terminal",
+  "version": "1.0.0",
+  "description": "Node.js Web Terminal - Run Node.js code in browser",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "start": "python -m http.server 8000"
+  },
+  "keywords": [
+    "nodejs",
+    "terminal",
+    "web",
+    "pterodactyl",
+    "code-editor"
+  ],
+  "author": "Kyyy",
+  "license": "MIT"
+}
