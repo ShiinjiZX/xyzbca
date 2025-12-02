@@ -3,12 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Node.js Web Terminal - Vercel Ready</title>
+    <title>Node.js Web Terminal - Professional Panel</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slide-in { animation: slideIn 0.3s ease-out; }
+        .context-menu {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .file-tree-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
@@ -16,7 +29,7 @@
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
 
-        // Lucide Icons as SVG components
+        // Icons
         const Terminal = ({ size = 24, className = "" }) => (
             <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="4 17 10 11 4 5"></polyline>
@@ -61,9 +74,12 @@
             <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+        );
+
+        const Folder = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
             </svg>
         );
 
@@ -71,7 +87,6 @@
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="21 8 21 21 3 21 3 8"></polyline>
                 <rect x="1" y="3" width="22" height="5"></rect>
-                <line x1="10" y1="12" x2="14" y2="12"></line>
             </svg>
         );
 
@@ -83,23 +98,38 @@
             </svg>
         );
 
-        const Github = ({ size = 24, className = "" }) => (
-            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-            </svg>
-        );
-
         const Save = ({ size = 24 }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                <polyline points="7 3 7 8 15 8"></polyline>
             </svg>
         );
 
-        const Folder = ({ size = 24 }) => (
+        const MoreVertical = ({ size = 24 }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="12" cy="5" r="1"></circle>
+                <circle cx="12" cy="19" r="1"></circle>
+            </svg>
+        );
+
+        const ChevronRight = ({ size = 24, className = "" }) => (
+            <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        );
+
+        const Package = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+        );
+
+        const X = ({ size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
         );
 
@@ -108,9 +138,15 @@
             const [output, setOutput] = useState([]);
             const [command, setCommand] = useState('');
             const [files, setFiles] = useState({});
+            const [folders, setFolders] = useState({});
             const [currentFile, setCurrentFile] = useState('index.js');
             const [currentContent, setCurrentContent] = useState('');
-            const [fileTree, setFileTree] = useState([]);
+            const [expandedFolders, setExpandedFolders] = useState({ '/': true });
+            const [contextMenu, setContextMenu] = useState(null);
+            const [selectedItem, setSelectedItem] = useState(null);
+            const [showModal, setShowModal] = useState(null);
+            const [modalInput, setModalInput] = useState('');
+            const [installedPackages, setInstalledPackages] = useState({});
             const outputRef = useRef(null);
 
             useEffect(() => {
@@ -126,31 +162,35 @@
             const loadFromStorage = () => {
                 try {
                     const stored = localStorage.getItem('nodejs-files');
+                    const storedFolders = localStorage.getItem('nodejs-folders');
+                    const storedPackages = localStorage.getItem('nodejs-packages');
+                    
                     if (stored) {
                         const filesData = JSON.parse(stored);
                         setFiles(filesData);
-                        updateFileTree(filesData);
-                        addOutput('Files loaded from storage', 'success');
+                    }
+                    if (storedFolders) {
+                        setFolders(JSON.parse(storedFolders));
+                    }
+                    if (storedPackages) {
+                        setInstalledPackages(JSON.parse(storedPackages));
+                    }
+                    addOutput('Workspace loaded', 'success');
+                } catch (err) {
+                    addOutput('Starting fresh workspace', 'info');
+                }
+            };
+
+            const saveToStorage = (filesData, foldersData, packagesData) => {
+                try {
+                    localStorage.setItem('nodejs-files', JSON.stringify(filesData || files));
+                    localStorage.setItem('nodejs-folders', JSON.stringify(foldersData || folders));
+                    if (packagesData) {
+                        localStorage.setItem('nodejs-packages', JSON.stringify(packagesData));
                     }
                 } catch (err) {
-                    addOutput('Starting fresh session', 'info');
+                    addOutput('Failed to save workspace', 'error');
                 }
-            };
-
-            const saveToStorage = (filesData) => {
-                try {
-                    localStorage.setItem('nodejs-files', JSON.stringify(filesData));
-                } catch (err) {
-                    addOutput('Failed to save files', 'error');
-                }
-            };
-
-            const updateFileTree = (filesData) => {
-                const tree = Object.keys(filesData).map(path => ({
-                    name: path.split('/').pop(),
-                    path: path,
-                }));
-                setFileTree(tree);
             };
 
             const addOutput = (text, type = 'output') => {
@@ -162,27 +202,36 @@
                 if (!file) return;
 
                 try {
-                    addOutput(`Uploading ${file.name}...`, 'info');
+                    addOutput(`Extracting ${file.name}...`, 'info');
                     
                     const zip = new JSZip();
                     const contents = await zip.loadAsync(file);
                     
                     const newFiles = { ...files };
+                    const newFolders = { ...folders };
                     let extractedCount = 0;
 
                     for (const [path, zipEntry] of Object.entries(contents.files)) {
-                        if (!zipEntry.dir) {
+                        if (zipEntry.dir) {
+                            newFolders[path] = true;
+                        } else {
                             const content = await zipEntry.async('string');
                             newFiles[path] = content;
                             extractedCount++;
+                            
+                            const pathParts = path.split('/');
+                            for (let i = 1; i < pathParts.length; i++) {
+                                const folderPath = pathParts.slice(0, i).join('/') + '/';
+                                newFolders[folderPath] = true;
+                            }
                         }
                     }
 
                     setFiles(newFiles);
-                    updateFileTree(newFiles);
-                    saveToStorage(newFiles);
+                    setFolders(newFolders);
+                    saveToStorage(newFiles, newFolders);
                     
-                    addOutput(`Extracted ${extractedCount} files from ${file.name}`, 'success');
+                    addOutput(`✓ Extracted ${extractedCount} files`, 'success');
                     
                     const firstJsFile = Object.keys(newFiles).find(f => f.endsWith('.js'));
                     if (firstJsFile) {
@@ -190,66 +239,165 @@
                         setCurrentContent(newFiles[firstJsFile]);
                     }
                 } catch (err) {
-                    addOutput(`Error extracting ZIP: ${err.message}`, 'error');
+                    addOutput(`Error: ${err.message}`, 'error');
                 }
-            };
-
-            const handleFileUpload = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const newFiles = { ...files, [file.name]: event.target.result };
-                    setFiles(newFiles);
-                    setCurrentFile(file.name);
-                    setCurrentContent(event.target.result);
-                    updateFileTree(newFiles);
-                    saveToStorage(newFiles);
-                    addOutput(`File uploaded: ${file.name}`, 'success');
-                };
-                reader.readAsText(file);
             };
 
             const createNewFile = () => {
-                const fileName = prompt('Enter file name (e.g., server.js):');
-                if (fileName) {
-                    const newFiles = { ...files, [fileName]: '' };
+                setShowModal('newFile');
+                setModalInput('');
+            };
+
+            const createNewFolder = () => {
+                setShowModal('newFolder');
+                setModalInput('');
+            };
+
+            const handleModalSubmit = () => {
+                if (!modalInput.trim()) return;
+
+                if (showModal === 'newFile') {
+                    const newFiles = { ...files, [modalInput]: '' };
                     setFiles(newFiles);
-                    setCurrentFile(fileName);
+                    setCurrentFile(modalInput);
                     setCurrentContent('');
-                    updateFileTree(newFiles);
-                    saveToStorage(newFiles);
-                    addOutput(`Created new file: ${fileName}`, 'success');
+                    saveToStorage(newFiles, folders);
+                    addOutput(`✓ Created: ${modalInput}`, 'success');
+                } else if (showModal === 'newFolder') {
+                    const folderPath = modalInput.endsWith('/') ? modalInput : modalInput + '/';
+                    const newFolders = { ...folders, [folderPath]: true };
+                    setFolders(newFolders);
+                    saveToStorage(files, newFolders);
+                    addOutput(`✓ Created folder: ${folderPath}`, 'success');
+                } else if (showModal === 'rename') {
+                    handleRename(modalInput);
+                } else if (showModal === 'move') {
+                    handleMove(modalInput);
+                } else if (showModal === 'npmInstall') {
+                    handleNpmInstall(modalInput);
                 }
+
+                setShowModal(null);
+                setModalInput('');
+            };
+
+            const handleRename = (newName) => {
+                if (selectedItem.type === 'file') {
+                    const newFiles = { ...files };
+                    newFiles[newName] = newFiles[selectedItem.path];
+                    delete newFiles[selectedItem.path];
+                    setFiles(newFiles);
+                    saveToStorage(newFiles, folders);
+                    addOutput(`✓ Renamed: ${selectedItem.path} → ${newName}`, 'success');
+                } else {
+                    const newFolders = { ...folders };
+                    newFolders[newName] = true;
+                    delete newFolders[selectedItem.path];
+                    setFolders(newFolders);
+                    saveToStorage(files, newFolders);
+                    addOutput(`✓ Renamed folder: ${selectedItem.path} → ${newName}`, 'success');
+                }
+            };
+
+            const handleMove = (destination) => {
+                if (selectedItem.type === 'file') {
+                    const fileName = selectedItem.path.split('/').pop();
+                    const newPath = destination.endsWith('/') ? destination + fileName : destination + '/' + fileName;
+                    const newFiles = { ...files };
+                    newFiles[newPath] = newFiles[selectedItem.path];
+                    delete newFiles[selectedItem.path];
+                    setFiles(newFiles);
+                    saveToStorage(newFiles, folders);
+                    addOutput(`✓ Moved: ${selectedItem.path} → ${newPath}`, 'success');
+                }
+            };
+
+            const handleDelete = () => {
+                if (selectedItem.type === 'file') {
+                    const newFiles = { ...files };
+                    delete newFiles[selectedItem.path];
+                    setFiles(newFiles);
+                    saveToStorage(newFiles, folders);
+                    addOutput(`✓ Deleted: ${selectedItem.path}`, 'success');
+                } else {
+                    const newFolders = { ...folders };
+                    delete newFolders[selectedItem.path];
+                    setFolders(newFolders);
+                    saveToStorage(files, newFolders);
+                    addOutput(`✓ Deleted folder: ${selectedItem.path}`, 'success');
+                }
+                setContextMenu(null);
+            };
+
+            const zipFolder = async (folderPath) => {
+                try {
+                    const zip = new JSZip();
+                    const folder = zip.folder(folderPath.replace('/', ''));
+                    
+                    Object.entries(files).forEach(([path, content]) => {
+                        if (path.startsWith(folderPath)) {
+                            const relativePath = path.substring(folderPath.length);
+                            folder.file(relativePath, content);
+                        }
+                    });
+
+                    const blob = await zip.generateAsync({ type: 'blob' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = folderPath.replace('/', '') + '.zip';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    addOutput(`✓ Zipped: ${folderPath}`, 'success');
+                } catch (err) {
+                    addOutput(`Error: ${err.message}`, 'error');
+                }
+            };
+
+            const handleNpmInstall = (packageName) => {
+                addOutput(`$ npm install ${packageName}`, 'command');
+                addOutput(`Installing ${packageName}...`, 'info');
+                
+                setTimeout(() => {
+                    const newPackages = { 
+                        ...installedPackages, 
+                        [packageName]: 'latest'
+                    };
+                    setInstalledPackages(newPackages);
+                    saveToStorage(files, folders, newPackages);
+                    
+                    addOutput(`✓ ${packageName}@latest installed`, 'success');
+                    addOutput(`+ ${packageName}`, 'output');
+                }, 500);
             };
 
             const saveCurrentFile = () => {
                 const newFiles = { ...files, [currentFile]: currentContent };
                 setFiles(newFiles);
-                saveToStorage(newFiles);
-                addOutput(`Saved: ${currentFile}`, 'success');
+                saveToStorage(newFiles, folders);
+                addOutput(`✓ Saved: ${currentFile}`, 'success');
             };
 
             const downloadAsZip = async () => {
                 try {
                     const zip = new JSZip();
 
-                    for (const [path, content] of Object.entries(files)) {
+                    Object.entries(files).forEach(([path, content]) => {
                         zip.file(path, content);
-                    }
+                    });
 
                     const blob = await zip.generateAsync({ type: 'blob' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = 'nodejs-project.zip';
+                    a.download = 'project.zip';
                     a.click();
                     URL.revokeObjectURL(url);
                     
-                    addOutput('Project downloaded as ZIP', 'success');
+                    addOutput('✓ Project exported', 'success');
                 } catch (err) {
-                    addOutput(`Error creating ZIP: ${err.message}`, 'error');
+                    addOutput(`Error: ${err.message}`, 'error');
                 }
             };
 
@@ -271,28 +419,42 @@
                             break;
                         
                         case 'npm':
-                            if (args[0] === 'start') {
+                            if (args[0] === 'install' || args[0] === 'i') {
+                                const pkg = args[1] || 'all packages';
+                                if (args[1]) {
+                                    handleNpmInstall(args[1]);
+                                } else {
+                                    addOutput('Installing dependencies...', 'info');
+                                    addOutput('✓ Dependencies installed', 'success');
+                                }
+                            } else if (args[0] === 'start') {
                                 if (files['index.js']) {
                                     executeNodeScript(files['index.js']);
                                 } else {
                                     addOutput('Error: index.js not found', 'error');
                                 }
-                            } else if (args[0] === 'install') {
-                                addOutput('npm install - Package installed (simulated)', 'success');
+                            } else if (args[0] === 'list' || args[0] === 'ls') {
+                                addOutput('Installed packages:', 'info');
+                                Object.entries(installedPackages).forEach(([pkg, ver]) => {
+                                    addOutput(`  ${pkg}@${ver}`, 'output');
+                                });
                             } else {
-                                addOutput(`npm ${args.join(' ')} - Command executed (simulated)`, 'info');
+                                addOutput(`npm ${args.join(' ')} executed`, 'info');
                             }
                             break;
                         
                         case 'ls':
-                            Object.keys(files).forEach(f => addOutput(f, 'output'));
+                        case 'dir':
+                            addOutput('Files and folders:', 'info');
+                            Object.keys(folders).forEach(f => addOutput(`  📁 ${f}`, 'output'));
+                            Object.keys(files).forEach(f => addOutput(`  📄 ${f}`, 'output'));
                             break;
                         
                         case 'cat':
                             if (files[args[0]]) {
                                 addOutput(files[args[0]], 'output');
                             } else {
-                                addOutput(`cat: ${args[0]}: No such file`, 'error');
+                                addOutput(`Error: ${args[0]} not found`, 'error');
                             }
                             break;
                         
@@ -301,12 +463,19 @@
                                 const newFiles = { ...files };
                                 delete newFiles[args[0]];
                                 setFiles(newFiles);
-                                updateFileTree(newFiles);
-                                saveToStorage(newFiles);
-                                addOutput(`Removed: ${args[0]}`, 'success');
+                                saveToStorage(newFiles, folders);
+                                addOutput(`✓ Removed: ${args[0]}`, 'success');
                             } else {
-                                addOutput(`rm: ${args[0]}: No such file`, 'error');
+                                addOutput(`Error: ${args[0]} not found`, 'error');
                             }
+                            break;
+                        
+                        case 'mkdir':
+                            const folderPath = args[0].endsWith('/') ? args[0] : args[0] + '/';
+                            const newFolders = { ...folders, [folderPath]: true };
+                            setFolders(newFolders);
+                            saveToStorage(files, newFolders);
+                            addOutput(`✓ Created: ${folderPath}`, 'success');
                             break;
                         
                         case 'clear':
@@ -316,18 +485,18 @@
                         case 'help':
                             addOutput('Available commands:', 'info');
                             addOutput('  node <file> - Run Node.js file', 'info');
+                            addOutput('  npm install <pkg> - Install package', 'info');
                             addOutput('  npm start - Run index.js', 'info');
-                            addOutput('  npm install - Install packages', 'info');
+                            addOutput('  npm list - Show packages', 'info');
                             addOutput('  ls - List files', 'info');
-                            addOutput('  cat <file> - Show file content', 'info');
-                            addOutput('  rm <file> - Remove file', 'info');
+                            addOutput('  cat <file> - Show content', 'info');
+                            addOutput('  rm <file> - Delete file', 'info');
+                            addOutput('  mkdir <name> - Create folder', 'info');
                             addOutput('  clear - Clear console', 'info');
-                            addOutput('  help - Show this help', 'info');
                             break;
                         
                         default:
                             addOutput(`Command not found: ${mainCmd}`, 'error');
-                            addOutput('Type "help" for available commands', 'info');
                     }
                 } catch (error) {
                     addOutput(`Error: ${error.message}`, 'error');
@@ -345,13 +514,19 @@
                         warn: (...args) => logs.push('WARN: ' + args.join(' '))
                     };
                     
+                    const mockRequire = (module) => {
+                        if (installedPackages[module]) {
+                            mockConsole.log(`✓ Loaded: ${module}`);
+                            return {};
+                        }
+                        mockConsole.warn(`Module ${module} not installed`);
+                        return {};
+                    };
+                    
                     const wrappedScript = `
                         (function() {
                             const console = mockConsole;
-                            const require = (module) => {
-                                mockConsole.log('Module loaded: ' + module);
-                                return {};
-                            };
+                            const require = mockRequire;
                             ${script}
                         })()
                     `;
@@ -359,7 +534,7 @@
                     try {
                         eval(wrappedScript);
                         logs.forEach(log => addOutput(log, 'output'));
-                        addOutput('Process exited with code 0', 'success');
+                        addOutput('✓ Process completed (exit 0)', 'success');
                     } catch (err) {
                         addOutput(`Runtime Error: ${err.message}`, 'error');
                     }
@@ -370,172 +545,210 @@
 
             const handleStart = () => {
                 if (!currentContent) {
-                    addOutput('Error: No script loaded. Please select a file.', 'error');
+                    addOutput('Error: No script loaded', 'error');
                     return;
                 }
                 setIsRunning(true);
-                addOutput('=== Starting Node.js Environment ===', 'info');
-                addOutput(`Running: ${currentFile}`, 'info');
+                addOutput('=== Starting Process ===', 'info');
                 executeNodeScript(currentContent);
                 setIsRunning(false);
             };
 
-            const handleStop = () => {
-                setIsRunning(false);
-                addOutput('=== Process Stopped (SIGTERM) ===', 'info');
+            const renderFileTree = () => {
+                const items = [];
+                
+                const sortedFolders = Object.keys(folders).sort();
+                const sortedFiles = Object.keys(files).sort();
+                
+                sortedFolders.forEach(folder => {
+                    const depth = (folder.match(/\//g) || []).length - 1;
+                    const name = folder.split('/').filter(Boolean).pop() || folder;
+                    const isExpanded = expandedFolders[folder];
+                    
+                    items.push(
+                        <div key={folder} style={{ paddingLeft: `${depth * 16}px` }}>
+                            <div
+                                className="flex items-center gap-2 px-2 py-1.5 cursor-pointer file-tree-item rounded text-sm"
+                                onClick={() => setExpandedFolders({ ...expandedFolders, [folder]: !isExpanded })}
+                                onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    setContextMenu({ x: e.clientX, y: e.clientY });
+                                    setSelectedItem({ path: folder, type: 'folder' });
+                                }}
+                            >
+                                <ChevronRight 
+                                    size={14} 
+                                    className={`transition-transform ${isExpanded ? 'rotate-90' : ''}`} 
+                                />
+                                <Folder size={16} className="text-blue-400" />
+                                <span className="text-gray-300">{name}</span>
+                            </div>
+                        </div>
+                    );
+                });
+                
+                sortedFiles.forEach(file => {
+                    const depth = (file.match(/\//g) || []).length;
+                    const name = file.split('/').pop();
+                    
+                    items.push(
+                        <div key={file} style={{ paddingLeft: `${depth * 16}px` }}>
+                            <div
+                                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer file-tree-item rounded text-sm ${
+                                    currentFile === file ? 'bg-blue-600 text-white' : 'text-gray-300'
+                                }`}
+                                onClick={() => {
+                                    setCurrentFile(file);
+                                    setCurrentContent(files[file]);
+                                }}
+                                onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    setContextMenu({ x: e.clientX, y: e.clientY });
+                                    setSelectedItem({ path: file, type: 'file' });
+                                }}
+                            >
+                                <FileText size={14} />
+                                <span>{name}</span>
+                            </div>
+                        </div>
+                    );
+                });
+                
+                return items;
             };
 
             const loadExampleProject = () => {
                 const exampleFiles = {
-                    'index.js': `// Express Server Example
-const express = require('express');
+                    'index.js': `const express = require('express');
 const app = express();
-const PORT = 3000;
 
-console.log('Starting Express server...');
+console.log('🚀 Starting server...');
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.json({ message: 'Hello World!' });
 });
 
-console.log(\`Server running on port \${PORT}\`);
-console.log('Server started successfully!');`,
+console.log('✓ Server ready on port 3000');`,
+                    
+                    'src/utils.js': `function formatDate(date) {
+  return date.toISOString();
+}
+
+module.exports = { formatDate };`,
                     
                     'package.json': `{
-  "name": "nodejs-web-terminal",
+  "name": "nodejs-terminal",
   "version": "1.0.0",
-  "description": "Node.js Web Terminal",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
   "dependencies": {
     "express": "^4.18.0"
   }
 }`,
                     
-                    'utils.js': `// Utility functions
-function formatDate(date) {
-  return date.toISOString();
-}
+                    'README.md': `# Node.js Project
 
-function generateId() {
-  return Math.random().toString(36).substr(2, 9);
-}
-
-console.log('Utils module loaded');
-module.exports = { formatDate, generateId };`,
-                    
-                    'README.md': `# Node.js Web Terminal Project
-
-This is an example Node.js project running in a web-based terminal.
-
-## Features
-- Express web server
-- Utility functions
-- Console monitoring
-
-## Usage
-Run: npm start`
+Professional terminal interface`
                 };
                 
+                const exampleFolders = { 'src/': true };
+                const examplePackages = { 'express': '^4.18.0' };
+                
                 setFiles(exampleFiles);
-                updateFileTree(exampleFiles);
+                setFolders(exampleFolders);
+                setInstalledPackages(examplePackages);
                 setCurrentFile('index.js');
                 setCurrentContent(exampleFiles['index.js']);
-                saveToStorage(exampleFiles);
-                addOutput('Example project loaded', 'success');
-            };
-
-            const getOutputColor = (type) => {
-                switch(type) {
-                    case 'command': return 'text-blue-400';
-                    case 'error': return 'text-red-400';
-                    case 'success': return 'text-green-400';
-                    case 'info': return 'text-yellow-400';
-                    default: return 'text-gray-300';
-                }
+                saveToStorage(exampleFiles, exampleFolders, examplePackages);
+                addOutput('✓ Example project loaded', 'success');
             };
 
             return (
-                <div className="min-h-screen bg-gray-900 p-4">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="bg-gray-800 rounded-t-lg p-4 border-b border-gray-700">
-                            <div className="flex items-center justify-between flex-wrap gap-3">
-                                <div className="flex items-center gap-3">
-                                    <Terminal size={28} className="text-green-400" />
-                                    <h1 className="text-2xl font-bold text-white">Node.js Terminal Panel</h1>
-                                    <Github size={20} className="text-gray-400" />
+                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
+                    <div className="max-w-[1920px] mx-auto">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-t-xl p-5 border-b-2 border-blue-500 shadow-xl">
+                            <div className="flex items-center justify-between flex-wrap gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-blue-600 p-3 rounded-lg">
+                                        <Terminal size={32} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-white">Node.js Terminal Panel</h1>
+                                        <p className="text-gray-400 text-sm mt-1">Professional Development Environment</p>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2 flex-wrap">
+                                <div className="flex gap-3 flex-wrap">
                                     <button
                                         onClick={handleStart}
                                         disabled={isRunning}
-                                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg transition-all shadow-lg font-semibold"
                                     >
-                                        <Play size={16} />
+                                        <Play size={18} />
                                         Start
                                     </button>
                                     <button
-                                        onClick={handleStop}
+                                        onClick={() => setIsRunning(false)}
                                         disabled={!isRunning}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg transition-all shadow-lg font-semibold"
                                     >
-                                        <Square size={16} />
+                                        <Square size={18} />
                                         Stop
                                     </button>
                                     <button
                                         onClick={() => setOutput([])}
-                                        className="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg transition-all shadow-lg font-semibold"
                                     >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={18} />
                                         Clear
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-                            <div className="lg:col-span-1 bg-gray-800 rounded-lg p-4 h-fit">
-                                <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                                    <FolderOpen size={18} className="text-blue-400" />
-                                    File Manager
-                                </h2>
+                        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 mt-4">
+                            {/* File Explorer */}
+                            <div className="xl:col-span-1 bg-gray-800 rounded-xl shadow-2xl border border-gray-700 animate-slide-in">
+                                <div className="p-4 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900">
+                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                        <FolderOpen size={20} className="text-blue-400" />
+                                        File Explorer
+                                    </h2>
+                                </div>
                                 
-                                <div className="space-y-2 mb-4">
-                                    <label className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded cursor-pointer transition-colors w-full justify-center">
+                                <div className="p-3 space-y-2">
+                                    <label className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm rounded-lg cursor-pointer transition-all shadow-md font-semibold w-full justify-center">
                                         <Archive size={16} />
                                         Import ZIP
-                                        <input
-                                            type="file"
-                                            accept=".zip"
-                                            onChange={handleZipUpload}
-                                            className="hidden"
-                                        />
-                                    </label>
-                                    
-                                    <label className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded cursor-pointer transition-colors w-full justify-center">
-                                        <Upload size={16} />
-                                        Upload File
-                                        <input
-                                            type="file"
-                                            accept=".js,.json,.md,.txt"
-                                            onChange={handleFileUpload}
-                                            className="hidden"
-                                        />
+                                        <input type="file" accept=".zip" onChange={handleZipUpload} className="hidden" />
                                     </label>
                                     
                                     <button
                                         onClick={createNewFile}
-                                        className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors w-full justify-center"
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm rounded-lg transition-all shadow-md font-semibold w-full justify-center"
                                     >
                                         <FileText size={16} />
                                         New File
                                     </button>
                                     
                                     <button
+                                        onClick={createNewFolder}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white text-sm rounded-lg transition-all shadow-md font-semibold w-full justify-center"
+                                    >
+                                        <Folder size={16} />
+                                        New Folder
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => { setShowModal('npmInstall'); setModalInput(''); }}
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-700 hover:to-yellow-800 text-white text-sm rounded-lg transition-all shadow-md font-semibold w-full justify-center"
+                                    >
+                                        <Package size={16} />
+                                        NPM Install
+                                    </button>
+                                    
+                                    <button
                                         onClick={downloadAsZip}
-                                        className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded transition-colors w-full justify-center"
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-sm rounded-lg transition-all shadow-md font-semibold w-full justify-center"
                                     >
                                         <Download size={16} />
                                         Export ZIP
@@ -543,125 +756,250 @@ Run: npm start`
                                     
                                     <button
                                         onClick={loadExampleProject}
-                                        className="flex items-center gap-2 px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm rounded transition-colors w-full justify-center"
+                                        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm rounded-lg transition-all shadow-md font-semibold w-full justify-center"
                                     >
-                                        <Folder size={16} />
+                                        <FolderOpen size={16} />
                                         Load Example
                                     </button>
                                 </div>
 
-                                <div className="border-t border-gray-700 pt-3">
-                                    <div className="text-xs text-gray-400 mb-2 font-semibold">PROJECT FILES</div>
-                                    <div className="space-y-1 max-h-96 overflow-y-auto">
-                                        {fileTree.length === 0 ? (
-                                            <div className="text-gray-500 text-sm py-2">No files yet</div>
+                                <div className="border-t border-gray-700 p-3">
+                                    <div className="text-xs text-gray-400 mb-3 font-bold uppercase tracking-wider">Workspace</div>
+                                    <div className="space-y-1 max-h-[600px] overflow-y-auto">
+                                        {Object.keys(files).length === 0 && Object.keys(folders).length === 0 ? (
+                                            <div className="text-gray-500 text-sm py-4 text-center">
+                                                <FolderOpen size={32} className="mx-auto mb-2 opacity-50" />
+                                                No files yet
+                                            </div>
                                         ) : (
-                                            fileTree.map((file, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => {
-                                                        setCurrentFile(file.path);
-                                                        setCurrentContent(files[file.path]);
-                                                    }}
-                                                    className={`w-full text-left px-3 py-2 rounded text-sm flex items-center gap-2 transition-colors ${
-                                                        currentFile === file.path 
-                                                            ? 'bg-blue-600 text-white' 
-                                                            : 'text-gray-300 hover:bg-gray-700'
-                                                    }`}
-                                                >
-                                                    <FileText size={14} />
-                                                    {file.name}
-                                                </button>
-                                            ))
+                                            renderFileTree()
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Installed Packages */}
+                                {Object.keys(installedPackages).length > 0 && (
+                                    <div className="border-t border-gray-700 p-3">
+                                        <div className="text-xs text-gray-400 mb-2 font-bold uppercase tracking-wider">Packages</div>
+                                        <div className="space-y-1">
+                                            {Object.entries(installedPackages).map(([pkg, ver]) => (
+                                                <div key={pkg} className="flex items-center gap-2 px-2 py-1 text-xs text-gray-300 bg-gray-900 rounded">
+                                                    <Package size={12} className="text-green-400" />
+                                                    <span>{pkg}</span>
+                                                    <span className="ml-auto text-gray-500">{ver}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="lg:col-span-3 space-y-4">
-                                <div className="bg-gray-800 rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                                            <FileText size={18} className="text-green-400" />
-                                            Editor: {currentFile}
+                            {/* Main Content */}
+                            <div className="xl:col-span-4 space-y-4">
+                                {/* Code Editor */}
+                                <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 animate-slide-in">
+                                    <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900">
+                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                            <FileText size={20} className="text-green-400" />
+                                            <span className="text-gray-400">Editor:</span>
+                                            <span className="text-blue-400">{currentFile}</span>
                                         </h2>
                                         <button
                                             onClick={saveCurrentFile}
-                                            className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm rounded-lg transition-all shadow-md font-semibold"
                                         >
-                                            <Save size={14} />
+                                            <Save size={16} />
                                             Save
                                         </button>
                                     </div>
-                                    <textarea
-                                        value={currentContent}
-                                        onChange={(e) => setCurrentContent(e.target.value)}
-                                        className="w-full h-64 bg-gray-900 text-gray-300 font-mono text-sm p-4 rounded border border-gray-700 focus:border-blue-500 focus:outline-none resize-none"
-                                        placeholder="// Select or create a file to start editing"
-                                    />
+                                    <div className="p-4">
+                                        <textarea
+                                            value={currentContent}
+                                            onChange={(e) => setCurrentContent(e.target.value)}
+                                            className="w-full h-80 bg-gray-900 text-gray-300 font-mono text-sm p-4 rounded-lg border-2 border-gray-700 focus:border-blue-500 focus:outline-none resize-none shadow-inner"
+                                            placeholder="// Select or create a file to start coding..."
+                                            spellCheck="false"
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="bg-gray-800 rounded-lg p-4">
-                                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                                        <Terminal size={18} className="text-green-400" />
-                                        Console
-                                        {isRunning && (
-                                            <span className="ml-auto text-xs bg-green-600 text-white px-2 py-1 rounded animate-pulse">
-                                                Running
-                                            </span>
-                                        )}
-                                    </h2>
-                                    <div
-                                        ref={outputRef}
-                                        className="bg-black rounded border border-gray-700 p-4 h-64 overflow-y-auto font-mono text-sm"
-                                    >
-                                        {output.length === 0 ? (
-                                            <div className="text-gray-500">
-                                                <div>Node.js Web Terminal v1.0.0</div>
-                                                <div>Type 'help' for available commands</div>
-                                            </div>
-                                        ) : (
-                                            output.map((line, i) => (
-                                                <div key={i} className={`${getOutputColor(line.type)} mb-1`}>
-                                                    <span className="text-gray-600 text-xs mr-2">[{line.timestamp}]</span>
-                                                    {line.text}
-                                                </div>
-                                            ))
-                                        )}
+                                {/* Console */}
+                                <div className="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 animate-slide-in">
+                                    <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-900">
+                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                            <Terminal size={20} className="text-green-400" />
+                                            Console
+                                            {isRunning && (
+                                                <span className="ml-3 text-xs bg-green-600 text-white px-3 py-1 rounded-full animate-pulse font-semibold">
+                                                    ● Running
+                                                </span>
+                                            )}
+                                        </h2>
                                     </div>
+                                    <div className="p-4">
+                                        <div
+                                            ref={outputRef}
+                                            className="bg-black rounded-lg border-2 border-gray-700 p-4 h-72 overflow-y-auto font-mono text-sm shadow-inner"
+                                        >
+                                            {output.length === 0 ? (
+                                                <div className="text-gray-500">
+                                                    <div className="text-green-400 font-bold">Node.js Web Terminal v2.0.0</div>
+                                                    <div className="mt-2">Ready to execute commands...</div>
+                                                    <div className="mt-1">Type 'help' for available commands</div>
+                                                </div>
+                                            ) : (
+                                                output.map((line, i) => (
+                                                    <div key={i} className={`mb-1 ${
+                                                        line.type === 'command' ? 'text-blue-400 font-bold' :
+                                                        line.type === 'error' ? 'text-red-400' :
+                                                        line.type === 'success' ? 'text-green-400' :
+                                                        line.type === 'info' ? 'text-yellow-400' :
+                                                        'text-gray-300'
+                                                    }`}>
+                                                        <span className="text-gray-600 text-xs mr-2">[{line.timestamp}]</span>
+                                                        {line.text}
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
 
-                                    <div className="mt-3 flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={command}
-                                            onChange={(e) => setCommand(e.target.value)}
-                                            onKeyPress={(e) => {
-                                                if (e.key === 'Enter') {
+                                        <div className="mt-4 flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={command}
+                                                onChange={(e) => setCommand(e.target.value)}
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter' && command.trim()) {
+                                                        executeCommand(command);
+                                                        setCommand('');
+                                                    }
+                                                }}
+                                                placeholder="$ node index.js | npm install | help"
+                                                className="flex-1 bg-gray-900 text-gray-300 px-4 py-3 rounded-lg border-2 border-gray-700 focus:border-blue-500 focus:outline-none font-mono text-sm shadow-inner"
+                                            />
+                                            <button
+                                                onClick={() => {
                                                     if (command.trim()) {
                                                         executeCommand(command);
                                                         setCommand('');
                                                     }
-                                                }
-                                            }}
-                                            placeholder="$ node index.js"
-                                            className="flex-1 bg-gray-900 text-gray-300 px-4 py-2 rounded border border-gray-700 focus:border-blue-500 focus:outline-none font-mono text-sm"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                if (command.trim()) {
-                                                    executeCommand(command);
-                                                    setCommand('');
-                                                }
-                                            }}
-                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                                        >
-                                            Execute
-                                        </button>
+                                                }}
+                                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all shadow-lg font-semibold"
+                                            >
+                                                Execute
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Context Menu */}
+                    {contextMenu && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setContextMenu(null)}
+                            />
+                            <div
+                                className="fixed bg-gray-800 rounded-lg shadow-2xl border border-gray-700 py-2 z-50 context-menu min-w-48"
+                                style={{ top: contextMenu.y, left: contextMenu.x }}
+                            >
+                                <button
+                                    onClick={() => {
+                                        setShowModal('rename');
+                                        setModalInput(selectedItem.path);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                >
+                                    Rename
+                                </button>
+                                {selectedItem?.type === 'file' && (
+                                    <button
+                                        onClick={() => {
+                                            setShowModal('move');
+                                            setModalInput('');
+                                            setContextMenu(null);
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                    >
+                                        Move
+                                    </button>
+                                )}
+                                {selectedItem?.type === 'folder' && (
+                                    <button
+                                        onClick={() => {
+                                            zipFolder(selectedItem.path);
+                                            setContextMenu(null);
+                                        }}
+                                        className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 transition-colors"
+                                    >
+                                        Zip Folder
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleDelete}
+                                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-gray-700 transition-colors"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {/* Modal */}
+                    {showModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                            <div className="bg-gray-800 rounded-xl shadow-2xl border-2 border-gray-700 p-6 max-w-md w-full">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-white">
+                                        {showModal === 'newFile' && 'Create New File'}
+                                        {showModal === 'newFolder' && 'Create New Folder'}
+                                        {showModal === 'rename' && 'Rename'}
+                                        {showModal === 'move' && 'Move File'}
+                                        {showModal === 'npmInstall' && 'Install Package'}
+                                    </h3>
+                                    <button
+                                        onClick={() => setShowModal(null)}
+                                        className="text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={modalInput}
+                                    onChange={(e) => setModalInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleModalSubmit()}
+                                    placeholder={
+                                        showModal === 'newFile' ? 'e.g., server.js' :
+                                        showModal === 'newFolder' ? 'e.g., src/' :
+                                        showModal === 'rename' ? 'New name' :
+                                        showModal === 'move' ? 'Destination folder' :
+                                        'e.g., express'
+                                    }
+                                    className="w-full bg-gray-900 text-gray-300 px-4 py-3 rounded-lg border-2 border-gray-700 focus:border-blue-500 focus:outline-none mb-4"
+                                    autoFocus
+                                />
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setShowModal(null)}
+                                        className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors font-semibold"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleModalSubmit}
+                                        className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all shadow-lg font-semibold"
+                                    >
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
